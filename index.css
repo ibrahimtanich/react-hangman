@@ -12,33 +12,33 @@ body {
   display: flex;
   justify-content: center;
 }
-div.timer {
-  color: red;
+
+section.time {
+  padding-top: 20px;
+  color: rgb(245, 127, 17);
+  text-align: center;
+  font-size: 25px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
 }
+
 header {
   text-align: center;
 }
 
-header > h1 {
+header>h1 {
   font-size: 1.25rem;
   font-weight: 500;
   color: #f9f4da;
 }
 
-header > p {
+header>p {
   font-size: 0.875rem;
   max-width: 350px;
   color: #8e8e8e;
   justify-self: center;
 }
-section.guess-left {
-  color: red;
-  text-align: center;
-  font-size: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 600;
-  margin-bottom: none;
-}
+
 section.game-status {
   display: flex;
   flex-direction: column;
@@ -52,27 +52,49 @@ section.game-status {
   margin-block: 10px;
   justify-self: center;
 }
+
 section.game-status.won {
   background-color: #10a95b;
 }
-section.game-status.lost {
-  background-color: red;
+
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-section.game-status.fareWell {
+
+.overlay-content {
+  text-align: center;
+  color: white;
+}
+
+section.game-status.farewell {
   background-color: #7a5ea7;
   border: 1px dashed #323232;
 }
-section.game-status > p.farewell-message {
+
+section.game-status>p.farewell-message {
   font-style: italic;
   font-weight: 400;
 }
-section.game-status > p {
+
+section.game-status>p {
   margin: 5px;
 }
-section.game-status > h2 {
+
+section.game-status>h2 {
   font-size: 1.25rem;
   margin: 5px;
 }
+
 section.language-chips {
   display: flex;
   flex-wrap: wrap;
@@ -82,11 +104,13 @@ section.language-chips {
   max-width: 350px;
   margin-bottom: 36px;
 }
+
 span.chip {
   border-radius: 3px;
   padding: 4.5px;
   position: relative;
 }
+
 span.chip.lost::before {
   content: "💀";
   position: absolute;
@@ -100,6 +124,7 @@ span.chip.lost::before {
   left: 0;
   background-color: rgba(0, 0, 0, 0.7);
 }
+
 section.word {
   display: flex;
   justify-content: center;
@@ -107,7 +132,7 @@ section.word {
   margin-bottom: 20px;
 }
 
-section.word > span {
+section.word>span {
   height: 40px;
   width: 40px;
   background-color: #323232;
@@ -117,7 +142,8 @@ section.word > span {
   font-size: 1.125rem;
   border-bottom: 1px solid #f9f4da;
 }
-section.word > span.missed-letter {
+
+section.word>span.missed-letter {
   color: #ec5d49;
 }
 
@@ -130,7 +156,8 @@ section.keyboard {
   margin-bottom: 36px;
   justify-self: center;
 }
-section.keyboard > button {
+
+section.keyboard>button {
   height: 40px;
   width: 40px;
   border-radius: 4px;
@@ -138,16 +165,20 @@ section.keyboard > button {
   background-color: #fcba29;
   cursor: pointer;
 }
-section.keyboard > button.correct {
+
+section.keyboard>button.correct {
   background-color: #10a95b;
 }
-section.keyboard > button.wrong {
+
+section.keyboard>button.wrong {
   background-color: #ec5d49;
 }
-section.keyboard > button:disabled {
+
+section.keyboard>button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
 button.new-game {
   background-color: #11b5e5;
   border: 1px solid #d7d7d7;
@@ -157,5 +188,34 @@ button.new-game {
   padding: 6px 12px;
   display: block;
   margin-inline: auto;
+  cursor: pointer;
+}
+
+div.timer-input {
+  justify-self: center;
+}
+
+div>input {
+  width: 190px;
+  border-radius: 4px;
+  border: 1px solid #d7d7d7;
+  margin-bottom: 5px;
+  font-size: large;
+}
+
+section.timer-button {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  padding: 2px;
+  gap: 2px;
+}
+
+section.timer-button>button {
+  background-color: #7adad5;
+  border: 1px solid #d7d7d7;
+  border-radius: 4px;
+  padding: 6px 12px;
   cursor: pointer;
 }

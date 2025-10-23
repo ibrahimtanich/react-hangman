@@ -1,31 +1,76 @@
+//todo add option for playing without timer
+//todo fix lose game
+//todo write a proper read me file
+//todo Add a status message for when a correct letter is clicked
+
 import { clsx } from "clsx";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useMemo, useState, useEffectEvent } from "react";
 import Confetti from "react-confetti";
 import Header from "./Header.jsx";
 import { languages } from "./languages.js";
 import { getFarewellText, randomWord } from "./utils.js";
-import Timer from "./Timer.jsx";
 
-/*1- Display the remaining guesses left 
-  2- Render some kind of anti-confetti when the Game is lost 
-  3- Set a timer one the game that causes a loss when the time runs out  
-*/
+// constants
+const time = 60;
 
 export default function AssemblyEndGame() {
   // states
   const [currentWord, setCurrentWord] = useState(() => randomWord());
   const [guessedLetters, setGuessedLetters] = useState([]);
+  const [counter, setCounter] = useState(time);
+  const [isRunning, setIsRunning] = useState(false);
+  const [inputValue, setInputValue] = useState(0);
 
   // derived values
+  const handleInputValue = () => {
+    const numValue = Number(inputValue);
+    if (!numValue || numValue <= 0) return;
+    setCounter(numValue);
+    setInputValue(0);
+  };
+
   const wrongGuessesCount = guessedLetters.filter(
     (letter) => !currentWord.includes(letter)
   ).length;
   const isGameWon = currentWord
     .split("")
     .every((letter) => guessedLetters.includes(letter));
-  const isGameLost = wrongGuessesCount + 1 >= languages.length;
+  const isGameLost = wrongGuessesCount + 1 >= languages.length || counter <= 0;
   const isGameOver = isGameLost || isGameWon;
-  const nomGuessesLeft = languages.length - 1 - wrongGuessesCount;
+  const numGuessesLeft = languages.length - 1 - wrongGuessesCount;
+
+  //EffectEvents
+
+  const onTick = useEffectEvent(() => {
+    setCounter((t) => t - 1);
+  });
+
+  //useEffects
+
+  useEffect(() => {
+    if (guessedLetters.length > 0 && !isRunning && !isGameOver) {
+      setIsRunning(true);
+    }
+  }, [guessedLetters, isRunning, isGameOver]);
+
+  useEffect(() => {
+    if (!isRunning || isGameOver) return;
+
+    const id = setInterval(() => {
+      onTick();
+    }, 1000);
+
+    const stopTimer = setTimeout(() => {
+      clearInterval(id);
+      setIsRunning(false);
+    }, counter * 1000);
+
+    return () => {
+      clearInterval(id);
+      clearTimeout(stopTimer);
+    };
+  }, [isRunning, isGameOver]);
 
   // static values
   const languageElements = languages.map((lang, index) => {
@@ -44,7 +89,10 @@ export default function AssemblyEndGame() {
     );
   });
 
-  const randomMsg = languages.map((lang) => getFarewellText(lang.name));
+  const randomMsg = useMemo(
+    () => languages.map((lang) => getFarewellText(lang.name)),
+    []
+  );
 
   const lettersArray = currentWord.split("");
   const letterElements = lettersArray.map((letter, index) => {
@@ -88,11 +136,22 @@ export default function AssemblyEndGame() {
     );
   }
 
-  function newGame() {
+  const newGame = () => {
+    setIsRunning(false);
+    setTimeout(() => {
+      setCurrentWord(randomWord());
+      setGuessedLetters([]);
+      setIsRunning(true);
+      setCounter(counter);
+    }, 0);
+  };
+
+  const tryAgain = () => {
+    setIsRunning(false);
+    setCounter(time);
     setCurrentWord(randomWord());
     setGuessedLetters([]);
-  }
-
+  };
   const lastGuessedLetter = guessedLetters[guessedLetters.length - 1];
   const lastGuessedLetterCorrect =
     lastGuessedLetter && currentWord.includes(lastGuessedLetter);
@@ -100,19 +159,69 @@ export default function AssemblyEndGame() {
   const gameStatusClass = clsx("game-status", {
     won: isGameWon,
     lost: isGameLost,
-    fareWell: !lastGuessedLetterCorrect && !isGameOver && wrongGuessesCount > 0,
+    farewell: !lastGuessedLetterCorrect && !isGameOver && wrongGuessesCount > 0,
   });
 
   return (
     <main>
-      <Timer className="check" />
       {isGameWon && <Confetti recycle={false} numberOfPieces={1000} />}
+      {isGameLost && (
+        <motion.div
+          className="overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          role="alert"
+          aria-live="assertive"
+        >
+          <div className="text-center">
+            <h2>
+              <span role="img" aria-label="skull">
+                💀
+              </span>
+              You lose! Better start learning Assembly
+              <span role="img" aria-label="skull">
+                💀
+              </span>
+            </h2>
+          </div>
+          <button onClick={tryAgain}>try again</button>
+        </motion.div>
+      )}
       <Header />
-      {
-        <section className="guess-left">
-          <p>Attempts Left {nomGuessesLeft}</p>
-        </section>
-      }
+
+      <div className="timer-input">
+        <label htmlFor="timer"></label>
+        <input
+          id="timer"
+          value={inputValue}
+          disabled={isRunning}
+          onChange={(e) => setInputValue(Number(e.target.value))}
+          type="number"
+          placeholder="set Timer in Seconds"
+        ></input>
+      </div>
+
+      <section className="timer-button">
+        <button
+          disabled={isRunning}
+          onClick={() => setInputValue(inputValue + 1)}
+        >
+          +1
+        </button>
+        <button
+          disabled={isRunning}
+          onClick={() => setInputValue(inputValue - 1)}
+        >
+          -1
+        </button>
+        <button disabled={isRunning} onClick={handleInputValue}>
+          Set New Time
+        </button>
+      </section>
+      <section className="time">
+        {`Time Remaining ${counter}`} <p>Attempts Left {numGuessesLeft}</p>
+      </section>
       {
         <GameState
           isGameOver={isGameOver}
@@ -127,11 +236,10 @@ export default function AssemblyEndGame() {
       <section className="language-chips">{languageElements}</section>
       <section className="word">{letterElements}</section>
       <section className="keyboard">{key}</section>
-      {(isGameLost || isGameWon) && (
-        <button onClick={newGame} className="new-game">
-          New Game
-        </button>
-      )}
+
+      <button onClick={!isRunning ? newGame : tryAgain} className="new-game">
+        {!isRunning ? "Start Game" : "Restart Game"}
+      </button>
     </main>
   );
 }
@@ -143,11 +251,6 @@ function GameState({ isGameOver, isGameLost, isGameWon, className, fareWell }) {
         <>
           <h2>You win!</h2>
           <p>Well done! 🎉</p>
-        </>
-      ) : isGameLost ? (
-        <>
-          <h2>Game over!</h2>
-          <p>You lose! Better start learning Assembly 😭</p>
         </>
       ) : !isGameOver ? (
         <>
